@@ -1,6 +1,19 @@
-import React from "react";
+import React, { useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "../../providers/AuthProvider";
 
 const Navbar = () => {
+  const { user, logOut } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logOut()
+      .then(() => {
+        navigate("/login");
+      })
+      .catch(error => console.error(error));
+  };
+  console.log(user)
   return (
     <div className="navbar bg-base-100">
       <div className="navbar-start">
@@ -25,52 +38,45 @@ const Navbar = () => {
             tabIndex={0}
             className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
           >
-            <li>
-              <a>Item 1</a>
-            </li>
+            <li><a>Item 1</a></li>
             <li>
               <a>Parent</a>
               <ul className="p-2">
-                <li>
-                  <a>Submenu 1</a>
-                </li>
-                <li>
-                  <a>Submenu 2</a>
-                </li>
+                <li><a>Submenu 1</a></li>
+                <li><a>Submenu 2</a></li>
               </ul>
             </li>
-            <li>
-              <a>Item 3</a>
-            </li>
+            <li><a>Item 3</a></li>
           </ul>
         </div>
         <a className="btn btn-ghost text-xl">daisyUI</a>
       </div>
       <div className="navbar-center hidden lg:flex">
         <ul className="menu menu-horizontal px-1">
-          <li>
-            <a>Item 1</a>
-          </li>
+          <li><a>Item 1</a></li>
           <li>
             <details>
               <summary>Parent</summary>
               <ul className="p-2">
-                <li>
-                  <a>Submenu 1</a>
-                </li>
-                <li>
-                  <a>Submenu 2</a>
-                </li>
+                <li><a>Submenu 1</a></li>
+                <li><a>Submenu 2</a></li>
               </ul>
             </details>
           </li>
-          <li>
-            <a>Item 3</a>
-          </li>
+          <li><a>Item 3</a></li>
         </ul>
       </div>
       <div className="navbar-end">
-        <a className="btn">Button</a>
+        {user ? (
+          <>
+            <span className="mr-2">{user.displayName || "User"}</span>
+            <button onClick={handleLogout} className="btn btn-error">Logout</button>
+          </>
+        ) : (
+          <Link to="/login">
+            <button className="btn btn-error">Login</button>
+          </Link>
+        )}
       </div>
     </div>
   );

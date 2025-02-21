@@ -1,7 +1,10 @@
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { AuthContext } from "../../providers/AuthProvider";
 
 export default function TaskSection() {
+    const {user} = useContext(AuthContext)
+    console.log(user)
   // Initial task list
   const initialTasks = [
     { id: "1", title: "📌 Complete Assignment" },
