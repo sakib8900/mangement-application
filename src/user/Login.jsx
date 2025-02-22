@@ -17,7 +17,7 @@ const Login = () => {
         photoURL: result.user.photoURL
       };
 
-      await axios.post("http://localhost:5000/users", user);
+      await axios.post("https://management-application-backend.vercel.app/users", user);
       Swal.fire({
         title: "Login Successful!",
         text: `Welcome back ${user.displayName}`,

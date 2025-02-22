@@ -1,34 +1,85 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState } from "react";
 import { AuthContext } from "../../providers/AuthProvider";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import Loading from "../../Loader/Loading";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const Projects = () => {
   const { user } = useContext(AuthContext);
-  const [tasks, setTasks] = useState([]);
   const [editingTask, setEditingTask] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshKey, setRefreshKey] = useState(0);
+  const queryClient = useQueryClient();
 
-  // Load Tasks from Backend
-  useEffect(() => {
-    setLoading(true);
-    axios
-      .get("http://localhost:5000/tasks")
-      .then((response) => {
-        const validTasks = response.data.filter((task) => task._id);
-        setTasks(validTasks);
-        setLoading(false);
-      })
-      .catch((error) => {
-        // console.error("Error fetching tasks:", error);
-        // setLoading(false);
-        // Swal.fire('Error', 'Failed to load tasks. Please refresh the page.', 'error');
+  // Fetch tasks query
+  const { data: tasks = [], isLoading } = useQuery({
+    queryKey: ["tasks", user?.email],
+    queryFn: async () => {
+      const response = await axios.get("https://management-application-backend.vercel.app/tasks");
+      const allTasks = response.data;
+      // Filter tasks by user email
+      return allTasks.filter((task) => task.email === user?.email);
+    },
+  });
+
+  // Add task mutation
+  const addTaskMutation = useMutation({
+    mutationFn: async (newTask) => {
+      const response = await axios.post("https://management-application-backend.vercel.app/tasks", newTask);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["tasks", user?.email]);
+      document.getElementById("task-modal").close();
+      Swal.fire("Success", "Task added successfully!", "success");
+    },
+  });
+
+  // Edit task mutation
+  const editTaskMutation = useMutation({
+    mutationFn: async (updatedTask) => {
+      const response = await axios.put(
+        `https://management-application-backend.vercel.app/tasks/${updatedTask._id}`,
+        updatedTask
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["tasks", user?.email]);
+      document.getElementById("edit-modal").close();
+      Swal.fire("Success", "Task updated successfully!", "success");
+    },
+  });
+
+  // Delete task mutation
+  const deleteTaskMutation = useMutation({
+    mutationFn: async (taskId) => {
+      const response = await axios.delete(
+        `https://management-application-backend.vercel.app/tasks/${taskId}`
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["tasks", user?.email]);
+      Swal.fire("Deleted!", "Your task has been deleted.", "success");
+    },
+  });
+
+  // Update task order mutation
+  const updateTaskOrderMutation = useMutation({
+    mutationFn: async (tasksToUpdate) => {
+      const response = await axios.put("https://management-application-backend.vercel.app/tasks/reorder", {
+        updatedTasks: tasksToUpdate,
       });
-  }, [refreshKey]);
-  const handleAddTask = async (event) => {
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["tasks", user?.email]);
+    },
+  });
+
+  const handleAddTask = (event) => {
     event.preventDefault();
     const form = event.target;
     const title = form.title.value;
@@ -40,32 +91,20 @@ const Projects = () => {
       description,
       category,
       timestamp: new Date(),
-      email: user?.email || "anonymous@example.com",
+      email: user?.email,
       displayName: user?.displayName || "Anonymous User",
     };
 
-    try {
-      const response = await axios.post("http://localhost:5000/tasks", newTask);
-      if (response.data.insertedId) {
-        setRefreshKey((prevKey) => prevKey + 1);
-        document.getElementById("task-modal").close();
-        Swal.fire("Success", "Task added successfully!", "success");
-        form.reset();
-      }
-    } catch (error) {
-      // console.error("Error adding task:", error);
-      // Swal.fire('Error', 'Failed to add task. Please try again.', 'error');
-    }
+    addTaskMutation.mutate(newTask);
+    form.reset();
   };
 
-  // Handle Edit Task
   const handleEditTask = (task) => {
     setEditingTask(task);
     document.getElementById("edit-modal").showModal();
   };
 
-  // Handle Save Edited Task
-  const handleSaveEditedTask = async (event) => {
+  const handleSaveEditedTask = (event) => {
     event.preventDefault();
     const form = event.target;
     const title = form.title.value;
@@ -79,29 +118,11 @@ const Projects = () => {
       category,
     };
 
-    try {
-      const response = await axios.put(
-        `http://localhost:5000/tasks/${editingTask._id}`,
-        updatedTask
-      );
-      if (response.data.modifiedCount > 0) {
-        setTasks(
-          tasks.map((task) =>
-            task._id === editingTask._id ? updatedTask : task
-          )
-        );
-        setEditingTask(null);
-        document.getElementById("edit-modal").close();
-        Swal.fire("Success", "Task updated successfully!", "success");
-      }
-    } catch (error) {
-      console.error("Error updating task:", error);
-      // Swal.fire('Error', 'Failed to update task. Please try again.', 'error');
-    }
+    editTaskMutation.mutate(updatedTask);
+    setEditingTask(null);
   };
 
-  // Handle Delete Task
-  const handleDeleteTask = async (id) => {
+  const handleDeleteTask = (id) => {
     Swal.fire({
       title: "Are you sure?",
       text: "You will not be able to recover this task!",
@@ -109,33 +130,14 @@ const Projects = () => {
       showCancelButton: true,
       confirmButtonText: "Yes, delete it!",
       cancelButtonText: "No, keep it",
-    }).then(async (result) => {
+    }).then((result) => {
       if (result.isConfirmed) {
-        try {
-          const response = await axios.delete(
-            `http://localhost:5000/tasks/${id}`
-          );
-          if (response.data.deletedCount > 0) {
-            setTasks(tasks.filter((task) => task._id !== id));
-            Swal.fire("Deleted!", "Your task has been deleted.", "success");
-          } else {
-            console.log("Task not found or already deleted.");
-            Swal.fire(
-              "Note",
-              "This task may have already been deleted.",
-              "info"
-            );
-          }
-        } catch (error) {
-          console.error("Error deleting task:", error);
-          // Swal.fire('Error', 'Failed to delete task. Please try again.', 'error');
-        }
+        deleteTaskMutation.mutate(id);
       }
     });
   };
 
-  // Handle Drag
-  const handleDragEnd = async (result) => {
+  const handleDragEnd = (result) => {
     const { source, destination } = result;
     if (!destination) return;
 
@@ -146,42 +148,19 @@ const Projects = () => {
       return;
 
     const tasksCopy = [...tasks];
-    // Get all tasks
     const sourceTasks = tasksCopy.filter(
       (task) => task.category === source.droppableId
     );
 
-    if (source.index >= sourceTasks.length) {
-      console.error("Invalid source index when dragging");
-      return;
-    }
+    if (source.index >= sourceTasks.length) return;
 
     const draggedTask = sourceTasks[source.index];
+    if (!draggedTask || !draggedTask._id) return;
 
-    // Verify dragged task exists and has an ID
-    if (!draggedTask || !draggedTask._id) {
-      console.error("Invalid dragged task or missing ID");
-      // Swal.fire('Error', 'Something went wrong during drag operation. Please refresh the page.', 'error');
-      return;
-    }
-
-    // Update the dragged task's category if it changed
     if (source.droppableId !== destination.droppableId) {
       draggedTask.category = destination.droppableId;
-      try {
-        await axios.patch(
-          `http://localhost:5000/tasks/${draggedTask._id}/category`,
-          {
-            category: destination.droppableId,
-          }
-        );
-      } catch (error) {
-        console.error("Error updating task category:", error);
-        // Swal.fire('Error', 'Failed to update task category. Please try again.', 'error');
-        setRefreshKey((prevKey) => prevKey + 1);
-        return;
-      }
     }
+
     tasksCopy.splice(tasksCopy.indexOf(sourceTasks[source.index]), 1);
 
     const destinationTasks = tasksCopy.filter(
@@ -191,13 +170,11 @@ const Projects = () => {
     const validDestIndex = Math.min(destination.index, destinationTasks.length);
     destinationTasks.splice(validDestIndex, 0, draggedTask);
 
-    // Reorder all tasks
     const updatedTasks = [
       ...tasksCopy.filter((task) => task.category !== destination.droppableId),
       ...destinationTasks,
     ];
 
-    // Update order
     const categorizedTasks = {
       "To-Do": [],
       "In Progress": [],
@@ -216,13 +193,12 @@ const Projects = () => {
     const finalOrderedTasks = [];
     let orderCounter = 1;
     Object.keys(categorizedTasks).forEach((category) => {
-      categorizedTasks[category].forEach((task, index) => {
+      categorizedTasks[category].forEach((task) => {
         task.order = orderCounter++;
         finalOrderedTasks.push(task);
       });
     });
 
-    setTasks(finalOrderedTasks);
     const tasksToUpdate = finalOrderedTasks
       .filter((task) => task._id)
       .map((task) => ({
@@ -231,30 +207,22 @@ const Projects = () => {
         category: task.category,
       }));
 
-    // Send updated order to server
-    try {
-      await axios.put("http://localhost:5000/tasks/reorder", {
-        updatedTasks: tasksToUpdate,
-      });
-    } catch (error) {
-      console.error("Error updating task order:", error);
-      // Swal.fire('Error', 'Failed to save task order. Please refresh and try again.', 'error');
-      setRefreshKey((prevKey) => prevKey + 1);
-    }
+    updateTaskOrderMutation.mutate(tasksToUpdate);
+    queryClient.setQueryData(["tasks", user?.email], finalOrderedTasks);
   };
 
-  // Prepare tasks for display in kanban board
   const categories = {
     "To-Do": tasks.filter((task) => task.category === "To-Do"),
     "In Progress": tasks.filter((task) => task.category === "In Progress"),
     Done: tasks.filter((task) => task.category === "Done"),
   };
-  
+
   return (
     <div className="container mx-auto p-4">
-      <h2 className="text-2xl font-bold text-center">Manage Your Projects</h2>
+      <h2 className="text-2xl text-blue-700 font-bold text-center">
+        Manage Your Projects
+      </h2>
 
-      {/* Add Task Button */}
       <button
         className="btn btn-primary my-4"
         onClick={() => document.getElementById("task-modal").showModal()}
@@ -334,7 +302,11 @@ const Projects = () => {
                 <option value="Done">Done</option>
               </select>
               <div className="modal-action">
-                <button type="submit" className="btn btn-success">
+                <button
+                  type="submit"
+                  className="btn btn-success"
+                  disabled={editTaskMutation.isPending}
+                >
                   Save Changes
                 </button>
                 <button
@@ -351,16 +323,13 @@ const Projects = () => {
       </dialog>
 
       {/* Loading State */}
-      {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-16 w-16"></div>
-        </div>
+      {isLoading ? (
+        <Loading></Loading>
       ) : (
-        /* Kanban Board with Drag and Drop */
         <DragDropContext onDragEnd={handleDragEnd}>
           <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Object.keys(categories).map((categoryName) => (
-              <div key={categoryName} className="bg-base-200 rounded-lg p-4">
+              <div key={categoryName} className="bg-gray-400 rounded-lg p-4">
                 <h3 className="text-xl font-semibold mb-4">{categoryName}</h3>
                 <Droppable droppableId={categoryName}>
                   {(provided) => (
@@ -371,17 +340,16 @@ const Projects = () => {
                     >
                       {categories[categoryName].map((task, index) => (
                         <Draggable
-                          key={task._id || `temp-${index}`}
-                          draggableId={task._id || `temp-${index}`}
+                          key={task._id}
+                          draggableId={task._id}
                           index={index}
-                          isDragDisabled={!task._id}
                         >
                           {(provided, snapshot) => (
                             <div
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
-                              className={`card bg-base-100 shadow-lg p-4 mb-2 ${
+                              className={`card bg-gray-300 shadow-md hover:shadow-xl shadow-blue-500 p-4 mb-2 ${
                                 snapshot.isDragging ? "opacity-70" : ""
                               }`}
                             >
@@ -391,26 +359,22 @@ const Projects = () => {
                                 </h3>
                                 <div className="flex gap-2">
                                   <button
-                                    onClick={() =>
-                                      task._id && handleDeleteTask(task._id)
-                                    }
+                                    onClick={() => handleDeleteTask(task._id)}
                                     className="text-red-500 hover:text-red-700"
-                                    disabled={!task._id}
+                                    disabled={deleteTaskMutation.isPending}
                                   >
                                     <FaTrash />
                                   </button>
                                   <button
-                                    onClick={() =>
-                                      task._id && handleEditTask(task)
-                                    }
+                                    onClick={() => handleEditTask(task)}
                                     className="text-blue-500 hover:text-blue-700"
-                                    disabled={!task._id}
                                   >
                                     <FaEdit />
                                   </button>
                                 </div>
                               </div>
                               <p className="my-2">{task.description}</p>
+                              <p>{task.timestamp.split("T")[0]}</p>
                               <div className="flex justify-between items-center mt-2">
                                 <p className="text-sm text-gray-500">
                                   {task.email}

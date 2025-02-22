@@ -1,0 +1,58 @@
+/* Light Mode */
+body {
+    background-color: white;
+    color: black;
+  }
+  
+  /* Dark Mode */
+  .dark body {
+    background-color: #09162f;
+    /* color: white; */
+  }
+  
+  /* Navbar Styling */
+  .navbar {
+    background-color: #1e3a8a !important;
+    color: white !important;
+  }
+  
+  /* Menu Links */
+  .menu a {
+    color: white;
+    padding: 4px 8px;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .menu a:hover {
+    background-color: #bfdbfe;
+    color: #1e40af;
+  }
+  
+  /* Active Link */
+  .active {
+    font-weight: bold;
+    border: 2px solid #3b82f6;
+    padding: 4px 8px;
+    border-radius: 8px;
+    background-color: #bfdbfe;
+    color: #1e40af;
+  }
+  
+  /* Dark Mode Navbar */
+  .dark .navbar {
+    background-color: #1e40af !important;
+    color: white !important;
+  }
+  
+  /* Dark Mode Menu Links */
+  .dark .menu a {
+    color: white;
+  }
+  
+  .dark .menu a:hover {
+    background-color: #3b82f6;
+    color: white;
+  }
+  
