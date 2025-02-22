@@ -16,7 +16,9 @@ const Projects = () => {
   const { data: tasks = [], isLoading } = useQuery({
     queryKey: ["tasks", user?.email],
     queryFn: async () => {
-      const response = await axios.get("https://management-application-backend.vercel.app/tasks");
+      const response = await axios.get(
+        "https://management-application-backend.vercel.app/tasks"
+      );
       const allTasks = response.data;
       // Filter tasks by user email
       return allTasks.filter((task) => task.email === user?.email);
@@ -26,7 +28,10 @@ const Projects = () => {
   // Add task mutation
   const addTaskMutation = useMutation({
     mutationFn: async (newTask) => {
-      const response = await axios.post("https://management-application-backend.vercel.app/tasks", newTask);
+      const response = await axios.post(
+        "https://management-application-backend.vercel.app/tasks",
+        newTask
+      );
       return response.data;
     },
     onSuccess: () => {
@@ -69,9 +74,12 @@ const Projects = () => {
   // Update task order mutation
   const updateTaskOrderMutation = useMutation({
     mutationFn: async (tasksToUpdate) => {
-      const response = await axios.put("https://management-application-backend.vercel.app/tasks/reorder", {
-        updatedTasks: tasksToUpdate,
-      });
+      const response = await axios.put(
+        "https://management-application-backend.vercel.app/tasks/reorder",
+        {
+          updatedTasks: tasksToUpdate,
+        }
+      );
       return response.data;
     },
     onSuccess: () => {
@@ -218,10 +226,10 @@ const Projects = () => {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <h2 className="text-2xl text-blue-700 font-bold text-center">
-        Manage Your Projects
-      </h2>
+    <div className="container mx-auto py-4">
+      <h1 className="text-4xl font-bold text-center w-full text-blue-500 mb-6">
+        Manage Your Projects 🚀
+      </h1>
 
       <button
         className="btn btn-primary my-4"
