@@ -5,6 +5,7 @@ import Login from "../user/Login";
 import Projects from "../pages/projects/Projects";
 import Profile from "../pages/profile/Profile";
 import Contact from "../pages/contact/Contact";
+import PrivateRoute from "./PrivateRoute";
 
 const router = createBrowserRouter([
     {
@@ -21,11 +22,15 @@ const router = createBrowserRouter([
             },
             {
                 path: "/project",
-                element: <Projects></Projects>
+                element: <PrivateRoute>
+                     <Projects></Projects>
+                </PrivateRoute>
             },
             {
                 path: "/profile",
-                element: <Profile></Profile>
+                element: <PrivateRoute>
+                    <Profile></Profile>
+                </PrivateRoute>
             },
             {
                 path: "/contact",

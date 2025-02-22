@@ -9,14 +9,11 @@ body {
     background-color: #09162f;
     /* color: white; */
   }
-  
-  /* Navbar Styling */
   .navbar {
     background-color: #1e3a8a !important;
     color: white !important;
   }
-  
-  /* Menu Links */
+
   .menu a {
     color: white;
     padding: 4px 8px;
@@ -40,13 +37,12 @@ body {
     color: #1e40af;
   }
   
-  /* Dark Mode Navbar */
+  /* Dark Mode */
   .dark .navbar {
     background-color: #1e40af !important;
     color: white !important;
   }
-  
-  /* Dark Mode Menu Links */
+
   .dark .menu a {
     color: white;
   }

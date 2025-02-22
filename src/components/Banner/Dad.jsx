@@ -6,7 +6,7 @@ const Dad = () => {
   return (
     <div className="py-4">
       {/* Heading Line */}
-      <h1 className="text-4xl font-bold text-center w-full text-blue-500 mb-6">
+      <h1 className="text-3xl md:text-4xl font-bold text-center w-full text-blue-500 mb-6">
         Project Management Made Easy 🚀
       </h1>
       <div className="flex flex-col lg:flex-row mb-3 items-center justify-between p-4 space-y-4 lg:space-y-0 lg:space-x-8">

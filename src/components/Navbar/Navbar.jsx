@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../providers/AuthProvider";
-import { BsSun, BsMoon } from "react-icons/bs"; // React Icons
+import { BsSun, BsMoon } from "react-icons/bs"; 
 import "./Navbar.css";
 
 const Navbar = () => {
@@ -67,7 +67,7 @@ const Navbar = () => {
             {nav}
           </ul>
         </div>
-        <a className="btn btn-ghost text-xl">Management Application</a>
+        <a className="btn btn-ghost md:text-xl text-md">Management Application</a>
       </div>
       <div className="navbar-center hidden lg:flex">
         <ul className="menu menu-horizontal px-1">{nav}</ul>
@@ -79,7 +79,6 @@ const Navbar = () => {
 
         {user ? (
           <>
-            <img className="w-10 rounded-full" src={user.photoURL || ""} alt="User" />
             <button onClick={handleLogout} className="btn btn-error">
               Logout
             </button>

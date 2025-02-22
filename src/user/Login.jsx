@@ -24,7 +24,7 @@ const Login = () => {
         icon: "success",
         confirmButtonText: "OK"
       }).then(() => {
-        navigate("/");
+        navigate(from, { replace: true });
       });
   };
 

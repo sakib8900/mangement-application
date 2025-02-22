@@ -227,7 +227,7 @@ const Projects = () => {
 
   return (
     <div className="container mx-auto py-4">
-      <h1 className="text-4xl font-bold text-center w-full text-blue-500 mb-6">
+      <h1 className="text-2xl2xl md:text-4xl font-bold text-center w-full text-blue-500 mb-6">
         Manage Your Projects 🚀
       </h1>
 

@@ -1,7 +1,7 @@
 # Management Application
 
 ## 🚀 Live Demo
-[Click here to visit the live site](https://management-application-144b0.web.app/)
+[Manage Application](https://management-application-144b0.web.app/)
 
 ## 📌 Overview
 Management Application is a powerful task management tool that allows users to efficiently organize their projects by dragging and dropping tasks between different stages: **To-Do, In Progress, and Done**. Users can also **edit** and **delete** their tasks with ease, ensuring smooth project management.
@@ -28,9 +28,6 @@ To run the project locally:
 - Start the development server using `npm run dev`.
 - Build the project for production using `npm run build`.
 - Preview the production build using `npm run preview`.
-
-## 📄 License
-This project is open-source and available for use under the [MIT License](LICENSE).
 
 ---
 

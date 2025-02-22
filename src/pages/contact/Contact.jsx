@@ -44,7 +44,7 @@ const Contact = () => {
     <div className="py-6">
       <div className="container mx-auto px-6 md:px-12">
         <h2 className="text-4xl font-bold text-blue-500 text-center mb-12">
-          Contact Me
+          Contact Me 📞
         </h2>
 
         <div className="grid md:grid-cols-2 gap-8">
